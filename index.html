@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Visitor System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+
+  <body class="bg-gray-100 p-6">
+    <h1 class="text-3xl font-bold mb-4">Visitor Monitoring</h1>
+
+    <input id="name" placeholder="Name" class="border p-2" />
+    <input id="purpose" placeholder="Purpose" class="border p-2" />
+    <button onclick="addVisitor()" class="bg-green-500 text-white px-4 py-2">
+      Add
+    </button>
+
+    <br /><br />
+
+    <button onclick="loadVisitors()" class="bg-blue-500 text-white px-4 py-2">
+      Load
+    </button>
+
+    <div id="list"></div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
