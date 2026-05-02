@@ -1,183 +1,862 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Visitor Monitoring System</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>VMS — Visitor Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=Merriweather+Sans:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --ink:    #0b0c0f;
+    --paper:  #f5f3ee;
+    --card:   #ffffff;
+    --muted:  #8a8a8e;
+    --border: #e2dfd8;
+    --accent: #1a1aff;
+    --accent2:#ff3d3d;
+    --green:  #00c06b;
+    --yellow: #f5a500;
+    --shadow: 0 2px 16px rgba(0,0,0,.07);
+    --r: 14px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── AUTH ──────────────────────────────────────────────── */
+  #authPage {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh;
+    background: var(--ink);
+    position: relative;
+    overflow: hidden;
+  }
+  #authPage::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 70% 60% at 80% 20%, #1a1aff22 0%, transparent 70%),
+      radial-gradient(ellipse 50% 50% at 10% 90%, #ff3d3d18 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .auth-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    width: min(900px, 94vw);
+    min-height: 520px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,.6);
+    position: relative; z-index: 1;
+  }
+  .auth-brand {
+    background: var(--accent);
+    padding: 52px 44px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  .auth-brand::after {
+    content: '';
+    position: absolute; bottom: -60px; right: -60px;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.08);
+  }
+  .brand-tag {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px; letter-spacing: 4px;
+    color: rgba(255,255,255,.5); text-transform: uppercase;
+  }
+  .brand-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 25px; font-weight: 800; line-height: 1.1;
+    color: #fff;
+  }
+  .brand-sub { font-size: 14px; color: rgba(255,255,255,.55); margin-top: 12px; }
+  .brand-dots {
+    display: flex; gap: 8px; margin-top: auto;
+  }
+  .brand-dots span {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(255,255,255,.3);
+    animation: pulse-dot 1.8s ease-in-out infinite;
+  }
+  .brand-dots span:nth-child(2) { animation-delay: .3s; }
+  .brand-dots span:nth-child(3) { animation-delay: .6s; }
+  @keyframes pulse-dot {
+    0%,100% { background: rgba(255,255,255,.2); }
+    50%      { background: rgba(255,255,255,.8); }
+  }
+  .auth-form-panel {
+    background: #fff;
+    padding: 52px 44px;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .auth-form-panel h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 24px; font-weight: 800;
+    margin-bottom: 6px;
+  }
+  .auth-form-panel .sub { font-size: 13px; color: var(--muted); margin-bottom: 32px; }
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block; font-size: 12px; font-weight: 600;
+    letter-spacing: .5px; color: var(--muted);
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .field input {
+    width: 100%; padding: 13px 16px;
+    border: 1.5px solid var(--border); border-radius: 10px;
+    font-family: inherit; font-size: 14px; color: var(--ink);
+    background: #fafafa; outline: none; transition: .2s;
+  }
+  .field input:focus { border-color: var(--accent); background: #fff; }
+  .btn-primary {
+    width: 100%; padding: 14px;
+    background: var(--ink); color: #fff;
+    border: none; border-radius: 10px;
+    font-family: inherit; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: .2s;
+    margin-top: 4px;
+  }
+  .btn-primary:hover { background: var(--accent); transform: translateY(-1px); }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 20px; text-align: center; }
+  .hint code {
+    background: #f0f0f0; border-radius: 4px;
+    padding: 2px 6px; font-size: 11px; color: #444;
+  }
+  @media (max-width:620px) {
+    .auth-grid { grid-template-columns: 1fr; min-height: auto; }
+    .auth-brand { display: none; }
+    .auth-form-panel { padding: 40px 28px; }
+  }
+
+  /* ── DASHBOARD ──────────────────────────────────────────── */
+  #dashboard { display: none; min-height: 100vh; }
+  .layout { display: flex; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 240px; flex-shrink: 0;
+    background: var(--ink);
+    display: flex; flex-direction: column;
+    padding: 32px 20px;
+    position: sticky; top: 0; height: 100vh;
+  }
+  .sidebar-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px; font-weight: 800; letter-spacing: 2px;
+    color: #fff; text-transform: uppercase;
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 40px;
+  }
+  .sidebar-logo .logo-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 3px rgba(26,26,255,.3);
+    animation: glow 2s ease-in-out infinite;
+  }
+  @keyframes glow {
+    0%,100% { box-shadow: 0 0 0 3px rgba(26,26,255,.3); }
+    50%      { box-shadow: 0 0 0 6px rgba(26,26,255,.15); }
+  }
+  .nav-section { font-size: 10px; letter-spacing: 2px; color: #444; text-transform: uppercase; margin: 20px 0 8px 12px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; border-radius: 10px;
+    font-size: 14px; font-weight: 500; color: #6b6b7b;
+    cursor: pointer; transition: .2s; border: none;
+    background: transparent; width: 100%; text-align: left;
+    margin-bottom: 2px;
+  }
+  .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .nav-item:hover { background: rgba(255,255,255,.06); color: #fff; }
+  .nav-item.active { background: rgba(26,26,255,.25); color: var(--accent); }
+  .nav-item.active svg { color: var(--accent); }
+  .sidebar-footer { margin-top: auto; }
+  .user-chip {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px; border-radius: 10px;
+    background: rgba(255,255,255,.05); margin-bottom: 10px;
+  }
+  .user-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 800; color: #fff;
+  }
+  .user-info { flex: 1; overflow: hidden; }
+  .user-name { font-size: 13px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-role-badge {
+    font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--accent); font-weight: 600;
+  }
+  .logout-btn {
+    width: 100%; padding: 11px; border-radius: 10px;
+    background: transparent; border: 1.5px solid #2a2a2a;
+    color: #666; font-family: inherit; font-size: 13px;
+    cursor: pointer; transition: .2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .logout-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  /* Main content */
+  .main {
+    flex: 1; padding: 40px 44px;
+    overflow-y: auto; background: var(--paper);
+  }
+  .page { display: none; animation: pageIn .3s ease; }
+  .page.active { display: block; }
+  @keyframes pageIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .page-header { margin-bottom: 32px; }
+  .page-header h1 {
+    font-family: 'Merriweather Sans', sans-serif;
+    font-size: 28px; font-weight: 800;
+  }
+  .page-header p { font-family: 'Merriweather Sans', sans-serif; font-size: 14px; color: var(--muted); margin-top: 4px; font-weight: 300; }
+
+  /* Stats row */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 16px; margin-bottom: 32px;
+  }
+  .stat-card {
+    background: var(--card); border-radius: var(--r);
+    padding: 22px 24px; border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .stat-label { font-family: 'Merriweather Sans', sans-serif; font-size: 12px; color: var(--muted); font-weight: 500; letter-spacing: .3px; }
+  .stat-value {
+    font-family: 'Merriweather Sans', sans-serif;
+    font-size: 32px; font-weight: 800; line-height: 1;
+  }
+  .stat-value.blue  { color: var(--accent); }
+  .stat-value.green { color: var(--green); }
+  .stat-value.red   { color: var(--accent2); }
+
+  /* Form card */
+  .form-card {
+    background: var(--card); border-radius: var(--r);
+    padding: 32px; border: 1px solid var(--border);
+    box-shadow: var(--shadow); max-width: 520px;
+  }
+  .form-card h3 { font-family: 'Syne', sans-serif; font-size: 16px; margin-bottom: 22px; }
+  .form-row { margin-bottom: 16px; }
+  .form-row label {
+    display: block; font-size: 12px; font-weight: 600;
+    letter-spacing: .5px; color: var(--muted);
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .form-row input, .form-row textarea {
+    width: 100%; padding: 13px 16px;
+    border: 1.5px solid var(--border); border-radius: 10px;
+    font-family: inherit; font-size: 14px; color: var(--ink);
+    background: #fafafa; outline: none; transition: .2s;
+    resize: none;
+  }
+  .form-row input:focus, .form-row textarea:focus {
+    border-color: var(--accent); background: #fff;
+  }
+  .submit-btn {
+    padding: 13px 28px; border-radius: 10px;
+    background: var(--ink); color: #fff;
+    border: none; font-family: inherit; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: .2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .submit-btn:hover { background: var(--accent); transform: translateY(-1px); }
+
+  /* Table */
+  .table-card {
+    background: var(--card); border-radius: var(--r);
+    border: 1px solid var(--border); box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .table-toolbar {
+    padding: 20px 24px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
+  }
+  .table-toolbar h3 { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 800; }
+  .refresh-btn {
+    padding: 9px 16px; border-radius: 8px;
+    background: transparent; border: 1.5px solid var(--border);
+    font-family: inherit; font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: .2s; color: var(--ink);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    padding: 13px 20px; text-align: left;
+    font-size: 11px; font-weight: 600; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--muted);
+    background: #fafaf8; border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 15px 20px;
+    font-size: 14px; border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fcfbf9; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 600; letter-spacing: .3px;
+  }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .badge.pending   { background: #fff8e6; color: #a06000; }
+  .badge.pending   .badge-dot { background: var(--yellow); }
+  .badge.approved  { background: #e6faf2; color: #006b3a; }
+  .badge.approved  .badge-dot { background: var(--green); }
+  .badge.rejected  { background: #fff0f0; color: #a00000; }
+  .badge.rejected  .badge-dot { background: var(--accent2); }
+  .action-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn-approve, .btn-reject, .btn-delete {
+    padding: 7px 14px; border-radius: 7px;
+    font-family: inherit; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: .2s; border: 1.5px solid transparent;
+  }
+  .btn-approve {
+    background: #e6faf2; color: #006b3a; border-color: #b5ead8;
+  }
+  .btn-approve:hover { background: var(--green); color: #fff; border-color: var(--green); }
+  .btn-reject {
+    background: #fff0f0; color: #a00000; border-color: #f5c6c6;
+  }
+  .btn-reject:hover { background: var(--accent2); color: #fff; border-color: var(--accent2); }
+  .btn-delete {
+    background: #fff0f0; color: #a00000; border-color: #f5c6c6;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .btn-delete:hover { background: #c0392b; color: #fff; border-color: #c0392b; }
+  .btn-delete svg { width: 13px; height: 13px; }
+
+  /* Confirm overlay */
+  #confirmOverlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.45); z-index: 8888;
+    align-items: center; justify-content: center;
+  }
+  #confirmOverlay.show { display: flex; }
+  .confirm-box {
+    background: #fff; border-radius: 16px;
+    padding: 32px 36px; width: min(400px, 92vw);
+    box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    text-align: center;
+  }
+  .confirm-icon {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff0f0; margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .confirm-icon svg { width: 24px; height: 24px; color: var(--accent2); }
+  .confirm-box h3 {
+    font-family: 'Syne', sans-serif; font-size: 18px;
+    font-weight: 800; margin-bottom: 8px;
+  }
+  .confirm-box p { font-size: 14px; color: var(--muted); margin-bottom: 28px; line-height: 1.5; }
+  .confirm-actions { display: flex; gap: 12px; justify-content: center; }
+  .confirm-cancel {
+    padding: 11px 24px; border-radius: 9px;
+    background: transparent; border: 1.5px solid var(--border);
+    font-family: inherit; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: .2s; color: var(--ink);
+  }
+  .confirm-cancel:hover { border-color: #888; }
+  .confirm-ok {
+    padding: 11px 24px; border-radius: 9px;
+    background: var(--accent2); border: none; color: #fff;
+    font-family: inherit; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: .2s;
+  }
+  .confirm-ok:hover { background: #c0392b; transform: translateY(-1px); }
+
+  /* Token code */
+  .token-code {
+    font-family: 'Courier New', monospace;
+    font-size: 12px; background: #f0f0f0;
+    padding: 3px 8px; border-radius: 5px; color: #333;
+  }
+  .empty-state {
+    text-align: center; padding: 60px 20px; color: var(--muted);
+  }
+  .empty-state .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  /* Toast */
+  #toast {
+    position: fixed; bottom: 32px; right: 32px;
+    background: var(--ink); color: #fff;
+    padding: 14px 22px; border-radius: 12px;
+    font-size: 14px; font-weight: 500;
+    box-shadow: 0 8px 30px rgba(0,0,0,.25);
+    z-index: 9999; transform: translateY(80px); opacity: 0;
+    transition: all .3s cubic-bezier(.34,1.56,.64,1);
+    display: flex; align-items: center; gap: 10px;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+  #toast.success::before { content: '✓'; color: var(--green); font-weight: 800; }
+  #toast.error::before   { content: '✕'; color: var(--accent2); font-weight: 800; }
+  #toast.info::before    { content: '●'; color: var(--accent); font-weight: 800; }
+
+  @media (max-width:768px) {
+    .sidebar { display: none; }
+    .main { padding: 24px 20px; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+  }
+</style>
 </head>
+<body>
 
-<body class="bg-gray-100 min-h-screen p-6">
-
-  <!-- HEADER -->
-  <div class="text-center mb-6">
-    <h1 class="text-4xl font-bold text-gray-800">🏫 Visitor Monitoring System</h1>
-    <p class="text-gray-500">Modern Access Control Dashboard</p>
+<!-- ░░░ AUTH PAGE ░░░ -->
+<div id="authPage">
+  <div class="auth-grid">
+    <div class="auth-brand">
+      <div>
+        <div class="brand-tag">Version 2.0</div>
+        <div class="brand-title" style="margin-top:16px">Visitor<br>Management<br>System</div>
+        <div class="brand-sub" style="margin-top:16px">Monitor, approve, and track<br>visitors with precision.</div>
+      </div>
+      <div class="brand-dots">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+    <div class="auth-form-panel">
+      <h2>Welcome back</h2>
+      <p class="sub">Sign in to access your dashboard.</p>
+      <div class="field">
+        <label>Username</label>
+        <input id="loginUser" placeholder="Enter username" autocomplete="username"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input id="loginPass" type="password" placeholder="Enter password" autocomplete="current-password"
+          onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+      <button class="btn-primary" onclick="doLogin()">Sign In →</button>
+      <div class="hint">
+        Default accounts: <code>admin / 1234</code> &nbsp;·&nbsp; <code>user / 1234</code>
+      </div>
+    </div>
   </div>
+</div>
 
-  <!-- VISITOR FORM -->
-  <div class="bg-white p-5 rounded-xl shadow mb-6">
-    <h2 class="text-xl font-semibold mb-3">Add Visitor</h2>
+<!-- ░░░ DASHBOARD ░░░ -->
+<div id="dashboard">
+  <div class="layout">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <div class="sidebar-logo">
+        <span class="logo-dot"></span> VMS
+      </div>
+      <div class="nav-section">Menu</div>
+      <button class="nav-item active" id="nav-register" onclick="showPage('register',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+        New Visitor
+      </button>
+      <button class="nav-item" id="nav-approvals" onclick="showPage('approvals',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Approvals
+        <span id="pendingBadge" style="margin-left:auto;background:var(--accent2);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;display:none"></span>
+      </button>
+      <button class="nav-item" id="nav-records" onclick="showPage('records',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        All Records
+      </button>
+      <div class="sidebar-footer">
+        <div class="user-chip">
+          <div class="user-avatar" id="userAvatar">A</div>
+          <div class="user-info">
+            <div class="user-name" id="userNameLabel">Admin</div>
+            <div class="user-role-badge" id="userRoleLabel">Admin</div>
+          </div>
+        </div>
+        <button class="logout-btn" onclick="doLogout()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Logout
+        </button>
+      </div>
+    </nav>
 
-    <input id="name" placeholder="Full Name"
-      class="border p-2 rounded w-full mb-2 focus:ring-2 focus:ring-blue-400" />
+    <!-- Main -->
+    <main class="main">
 
-    <input id="purpose" placeholder="Purpose of Visit"
-      class="border p-2 rounded w-full mb-3 focus:ring-2 focus:ring-blue-400" />
-
-    <button onclick="addVisitor()"
-      class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">
-      Add Visitor
-    </button>
-  </div>
-
-  <!-- ACTIONS -->
-  <div class="flex gap-3 mb-6">
-    <button onclick="loadVisitors()"
-      class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg">
-      Load Visitors
-    </button>
-
-    <button onclick="loadReport()"
-      class="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-lg">
-      Daily Report
-    </button>
-  </div>
-
-  <!-- QR CHECK-IN -->
-  <div class="bg-white p-5 rounded-xl shadow mb-6">
-    <h2 class="text-xl font-semibold mb-3">Check-in (QR Code)</h2>
-
-    <input id="qr" placeholder="Paste QR string here"
-      class="border p-2 rounded w-full mb-3" />
-
-    <button onclick="checkin()"
-      class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
-      Check-in
-    </button>
-  </div>
-
-  <!-- CHECK OUT -->
-  <div class="bg-white p-5 rounded-xl shadow mb-6">
-    <h2 class="text-xl font-semibold mb-3">Check-out</h2>
-
-    <input id="checkoutId" placeholder="Visitor ID"
-      class="border p-2 rounded w-full mb-3" />
-
-    <button onclick="checkout()"
-      class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">
-      Check-out
-    </button>
-  </div>
-
-  <!-- REPORT -->
-  <div id="report" class="mb-6"></div>
-
-  <!-- VISITOR LIST -->
-  <div id="list" class="grid gap-4"></div>
-
-
-<script>
-const API = "http://localhost:3000"; // change to Render URL if deployed
-
-// ================= ADD VISITOR =================
-async function addVisitor() {
-  const name = document.getElementById("name").value;
-  const purpose = document.getElementById("purpose").value;
-
-  await fetch(`${API}/visitors`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, purpose })
-  });
-
-  loadVisitors();
-}
-
-// ================= LOAD VISITORS =================
-async function loadVisitors() {
-  const res = await fetch(`${API}/visitors`);
-  const data = await res.json();
-
-  const list = document.getElementById("list");
-  list.innerHTML = "";
-
-  data.forEach(v => {
-    list.innerHTML += `
-      <div class="bg-white p-4 rounded-xl shadow border">
-        <p class="text-lg font-bold">${v.name}</p>
-        <p class="text-gray-600">Purpose: ${v.purpose}</p>
-        <p class="text-sm mt-1">Status: <b>${v.status}</b></p>
-        <p class="text-xs text-gray-400">ID: ${v.id}</p>
-
-        <div class="mt-3 flex gap-2 flex-wrap">
-
-          ${v.status === "PENDING" ? `
-            <button onclick="approve('${v.id}')"
-              class="bg-blue-500 text-white px-3 py-1 rounded">
-              Approve
-            </button>
-          ` : ""}
-
+      <!-- Register Page -->
+      <div id="page-register" class="page active">
+        <div class="page-header">
+          <h1>New Visitor Entry</h1>
+          <p>Register a visitor for review and approval.</p>
+        </div>
+        <div class="stats-row" id="statsRow">
+          <div class="stat-card">
+            <div class="stat-label">Total Visitors</div>
+            <div class="stat-value blue" id="statTotal">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Approved</div>
+            <div class="stat-value green" id="statApproved">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Pending</div>
+            <div class="stat-value" style="color:var(--yellow)" id="statPending">—</div>
+          </div>
+        </div>
+        <div class="form-card">
+          <h3>Visitor Registration Form</h3>
+          <div class="form-row">
+            <label>Full Name</label>
+            <input id="v_name" placeholder="e.g. Juan Dela Cruz"/>
+          </div>
+          <div class="form-row">
+            <label>Purpose of Visit</label>
+            <textarea id="v_purpose" rows="3" placeholder="e.g. Meeting with principal regarding enrollment"></textarea>
+          </div>
+          <button class="submit-btn" onclick="addVisitor()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Submit Registration
+          </button>
         </div>
       </div>
-    `;
-  });
-}
 
-// ================= APPROVE =================
-async function approve(id) {
-  const res = await fetch(`${API}/visitors/${id}/approve`, {
-    method: "PUT"
-  });
+      <!-- Approvals Page -->
+      <div id="page-approvals" class="page">
+        <div class="page-header">
+          <h1>Pending Approvals</h1>
+          <p>Review and approve or reject incoming visitor requests.</p>
+        </div>
+        <div class="table-card">
+          <div class="table-toolbar">
+            <h3>Visitor Requests</h3>
+            <button class="refresh-btn" onclick="loadApprovals()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              Refresh
+            </button>
+          </div>
+          <table>
+            <thead><tr><th>Visitor</th><th>Purpose</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="approvalsList"></tbody>
+          </table>
+        </div>
+      </div>
 
-  const data = await res.json();
-  alert("QR GENERATED:\n" + data.qr);
+      <!-- Records Page -->
+      <div id="page-records" class="page">
+        <div class="page-header">
+          <h1>All Records</h1>
+          <p>Complete log of all visitor entries and their access tokens.</p>
+        </div>
+        <div class="table-card">
+          <div class="table-toolbar">
+            <h3>Visitor Log</h3>
+            <button class="refresh-btn" onclick="loadRecords()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              Refresh
+            </button>
+          </div>
+          <table id="recordsTable">
+            <!-- thead injected by JS to conditionally include Actions column -->
+            <tbody id="recordsList"></tbody>
+          </table>
+        </div>
+      </div>
 
-  loadVisitors();
-}
+    </main>
+  </div>
+</div>
 
-// ================= CHECK-IN =================
-async function checkin() {
-  const qr = document.getElementById("qr").value;
-
-  await fetch(`${API}/visitors/checkin`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ qr })
-  });
-
-  loadVisitors();
-}
-
-// ================= CHECK-OUT =================
-async function checkout() {
-  const id = document.getElementById("checkoutId").value;
-
-  await fetch(`${API}/visitors/checkout/${id}`, {
-    method: "PUT"
-  });
-
-  loadVisitors();
-}
-
-// ================= DAILY REPORT =================
-async function loadReport() {
-  const res = await fetch(`${API}/reports/daily`);
-  const data = await res.json();
-
-  document.getElementById("report").innerHTML = `
-    <div class="bg-white p-4 rounded-xl shadow">
-      <h2 class="text-xl font-bold mb-2">📊 Daily Report</h2>
-      <p>Total: ${data.total}</p>
-      <p>Pending: ${data.pending}</p>
-      <p>Approved: ${data.approved}</p>
-      <p>Checked-in: ${data.checkedIn}</p>
-      <p>Exited: ${data.exited}</p>
+<!-- ░░░ CONFIRM DIALOG ░░░ -->
+<div id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+        <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+      </svg>  
     </div>
-  `;
+    <h3>Delete this record?</h3>
+    <p>This action is permanent and cannot be undone.<br>The visitor's log entry will be removed.</p>
+    <div class="confirm-actions">
+      <button class="confirm-cancel" onclick="closeConfirm()">Cancel</button>
+      <button class="confirm-ok" id="confirmOkBtn">Yes, Delete</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const API = 'https://schoolvisitorlogaccessmonitoringsystem.onrender.com';
+let currentUser = null;
+let pendingDeleteId = null;
+
+const defaultAccounts = [
+  { username: 'admin', password: '1234', role: 'ADMIN' },
+  { username: 'user',  password: '1234', role: 'USER'  },
+];
+
+// ── TOAST ──────────────────────────────────────────────────
+function toast(msg, type='info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `show ${type}`;
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.className = ''; }, 3000);
+}
+
+// ── AUTH ───────────────────────────────────────────────────
+async function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  if (!u || !p) { toast('Please enter credentials.','error'); return; }
+
+  const local = defaultAccounts.find(a => a.username === u && a.password === p);
+  if (local) { enterDashboard(local); return; }
+
+  try {
+    const res = await fetch(`${API}/login`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ username: u, password: p }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      enterDashboard({ username: u, role: data.role });
+    } else {
+      toast('Invalid credentials.', 'error');
+    }
+  } catch {
+    toast('Could not reach server — check your connection.', 'error');
+  }
+}
+
+function isAdmin() {
+  return currentUser && currentUser.role === 'ADMIN';
+}
+
+function enterDashboard(user) {
+  currentUser = user;
+  document.getElementById('authPage').style.display = 'none';
+  document.getElementById('dashboard').style.display  = 'block';
+  document.getElementById('userNameLabel').textContent = user.username;
+  document.getElementById('userRoleLabel').textContent = user.role;
+  document.getElementById('userAvatar').textContent    = user.username[0].toUpperCase();
+
+  if (!isAdmin()) {
+    document.getElementById('nav-approvals').style.display = 'none';
+  } else {
+    document.getElementById('nav-approvals').style.display = '';
+  }
+
+  loadStats();
+  toast(`Welcome, ${user.username}!`, 'success');
+}
+
+function doLogout() {
+  currentUser = null;
+  document.getElementById('dashboard').style.display  = 'none';
+  document.getElementById('authPage').style.display   = 'flex';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  showPage('register', document.getElementById('nav-register'));
+  toast('Logged out.', 'info');
+}
+
+// ── NAV ────────────────────────────────────────────────────
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (id === 'approvals') loadApprovals();
+  if (id === 'records')   loadRecords();
+}
+
+// ── DATA ───────────────────────────────────────────────────
+async function fetchVisitors() {
+  const res = await fetch(`${API}/visitors`);
+  if (!res.ok) throw new Error('Network error');
+  return res.json();
+}
+
+async function loadStats() {
+  try {
+    const data = await fetchVisitors();
+    document.getElementById('statTotal').textContent    = data.length;
+    document.getElementById('statApproved').textContent = data.filter(v=>v.status==='APPROVED').length;
+    document.getElementById('statPending').textContent  = data.filter(v=>v.status==='PENDING').length;
+    const p = data.filter(v=>v.status==='PENDING').length;
+    const badge = document.getElementById('pendingBadge');
+    if (p > 0) { badge.textContent = p; badge.style.display = 'inline'; }
+    else badge.style.display = 'none';
+  } catch { /* silent */ }
+}
+
+async function addVisitor() {
+  const name    = document.getElementById('v_name').value.trim();
+  const purpose = document.getElementById('v_purpose').value.trim();
+  if (!name || !purpose) { toast('Please fill in all fields.','error'); return; }
+  try {
+    const res = await fetch(`${API}/visitors`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ name, purpose }),
+    });
+    if (res.ok) {
+      document.getElementById('v_name').value    = '';
+      document.getElementById('v_purpose').value = '';
+      toast('Visitor registered successfully!', 'success');
+      loadStats();
+    } else { toast('Failed to register visitor.','error'); }
+  } catch { toast('Could not reach server.','error'); }
+}
+
+function statusBadge(status) {
+  const s = (status||'').toUpperCase();
+  const cls = s === 'APPROVED' ? 'approved' : s === 'REJECTED' ? 'rejected' : 'pending';
+  return `<span class="badge ${cls}"><span class="badge-dot"></span>${s||'PENDING'}</span>`;
+}
+
+// ── APPROVALS (admin only) ─────────────────────────────────
+async function loadApprovals() {
+  if (!isAdmin()) { toast('Access denied.', 'error'); return; }
+  const tbody = document.getElementById('approvalsList');
+  tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:40px">Loading…</td></tr>`;
+  try {
+    const data = await fetchVisitors();
+    const pending = data.filter(v => (v.status||'PENDING') === 'PENDING');
+    if (!pending.length) {
+      tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><div class="empty-icon">✓</div><p>No pending approvals right now.</p></div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = pending.map(v => `
+      <tr>
+        <td><strong>${esc(v.name)}</strong></td>
+        <td style="color:var(--muted);font-size:13px">${esc(v.purpose)}</td>
+        <td>${statusBadge(v.status)}</td>
+        <td><div class="action-row">
+          <button class="btn-approve" onclick="approveVisitor('${v.id}')">Approve</button>
+          <button class="btn-reject"  onclick="rejectVisitor('${v.id}')">Reject</button>
+        </div></td>
+      </tr>`).join('');
+  } catch { toast('Failed to load visitors.','error'); }
+}
+
+async function approveVisitor(id) {
+  if (!isAdmin()) { toast('Access denied.', 'error'); return; }
+  try {
+    await fetch(`${API}/visitors/${id}/approve`, { method: 'PUT' });
+    toast('Visitor approved. Access token generated.', 'success');
+    loadApprovals(); loadStats();
+  } catch { toast('Error approving visitor.','error'); }
+}
+
+async function rejectVisitor(id) {
+  if (!isAdmin()) { toast('Access denied.', 'error'); return; }
+  try {
+    await fetch(`${API}/visitors/${id}/reject`, { method: 'PUT' });
+    toast('Visitor rejected.', 'info');
+    loadApprovals(); loadStats();
+  } catch { toast('Error rejecting visitor.','error'); }
+}
+
+// ── RECORDS ────────────────────────────────────────────────
+async function loadRecords() {
+  const tbody = document.getElementById('recordsList');
+  const table = document.getElementById('recordsTable');
+  const admin = isAdmin();
+
+  // Build thead dynamically — Actions column only for admin
+  table.querySelector('thead') && table.querySelector('thead').remove();
+  const thead = document.createElement('thead');
+  thead.innerHTML = `<tr>
+    <th>Name</th>
+    <th>Purpose</th>
+    <th>Status</th>
+    <th>Access Token</th>
+    ${admin ? '<th>Actions</th>' : ''}
+  </tr>`;
+  table.insertBefore(thead, tbody);
+
+  tbody.innerHTML = `<tr><td colspan="${admin ? 5 : 4}" style="text-align:center;color:var(--muted);padding:40px">Loading…</td></tr>`;
+
+  try {
+    const data = await fetchVisitors();
+    if (!data.length) {
+      tbody.innerHTML = `<tr><td colspan="${admin ? 5 : 4}"><div class="empty-state"><div class="empty-icon">📋</div><p>No records yet.</p></div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = data.map(v => `
+      <tr>
+        <td><strong>${esc(v.name)}</strong></td>
+        <td style="color:var(--muted);font-size:13px">${esc(v.purpose||'—')}</td>
+        <td>${statusBadge(v.status)}</td>
+        <td>${v.qrToken ? `<code class="token-code">${esc(v.qrToken)}</code>` : '<span style="color:var(--muted)">—</span>'}</td>
+        ${admin ? `
+        <td>
+          <button class="btn-delete" onclick="confirmDelete('${v.id}', '${esc(v.name)}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              <path d="M10 11v6"/><path d="M14 11v6"/>
+              <path d="M9 6V4h6v2"/>
+            </svg>
+            Delete
+          </button>
+        </td>` : ''}
+      </tr>`).join('');
+  } catch { toast('Failed to load records.','error'); }
+}
+
+// ── DELETE ─────────────────────────────────────────────────
+function confirmDelete(id, name) {
+  if (!isAdmin()) { toast('Access denied.', 'error'); return; }
+  pendingDeleteId = id;
+  const overlay = document.getElementById('confirmOverlay');
+  overlay.classList.add('show');
+  document.getElementById('confirmOkBtn').onclick = () => executeDelete(id);
+}
+
+function closeConfirm() {
+  document.getElementById('confirmOverlay').classList.remove('show');
+  pendingDeleteId = null;
+}
+
+async function executeDelete(id) {
+  if (!isAdmin()) { toast('Access denied.', 'error'); closeConfirm(); return; }
+  closeConfirm();
+  try {
+    const res = await fetch(`${API}/visitors/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      toast('Record deleted successfully.', 'success');
+      loadRecords();
+      loadStats();
+    } else {
+      toast('Failed to delete record.', 'error');
+    }
+  } catch {
+    toast('Could not reach server.', 'error');
+  }
+}
+
+// Close confirm on overlay backdrop click
+document.getElementById('confirmOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeConfirm();
+});
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;');
 }
 </script>
-
 </body>
 </html>
